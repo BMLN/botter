@@ -1,0 +1,14 @@
+[project]
+name = "jira-botter"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "chatbot",
+    "prompting",
+]
+
+[tool.uv.sources]
+prompting = { git = "https://github.com/BMLN/prompting" }
+chatbot = { git = "https://github.com/BMLN/chatterbot", branch = "unwrapped_shareddecoration" }

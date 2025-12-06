@@ -8,7 +8,6 @@ from instructions import system_prompt, user_prompt
 
 question = "Guten Tag, GUI kann sich nicht anmelden. Wann kann das Problem beheben?\nIch muss heute alle praktischen Aufgaben einreichen. Ich habe alle Aufgaben gemacht außer\ndie Fallstudie ""HCM""  .\nKönnen Sie mir helfen?\nDanke!!!"
 
-
 context = [
     r"Hallo Zusammen, leider kann ich mich nicht im System anmelden, weil die Anmeldedaten offenbar nicht mehr funktionieren. (s. Screenshot) Können Sie mir bitte eine neue Anmeldenachricht für *Modul Rechnungswesen und Controlling: Mikrozertifikatskurs ""Rechnungswesen und Controlling in SAP S/4HANA""* zusenden?\n\n\n\nVielen Dank vorab und viele Grüße",
     r"Sehr geehrtes Support-Team,\n\nleider kann ich mich nicht in das SAP-System einloggen. Ich habe es mit den angegebenen Zugangsdaten versucht, jedoch ohne Erfolg.\nKönnten Sie mir bitte weiterhelfen?\n\nVielen Dank im Voraus für Ihre Unterstützung."

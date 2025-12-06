@@ -5,6 +5,7 @@ system_prompt = Prompt("""Using answers contained in the context, give a compreh
 Respond only to the question asked, response should be concise and relevant to the question.
 If the answer wouldn't match the examples, do not give any answer at all.""")
 
+
 user_prompt = Prompt("""Context:
 {context}
 ---

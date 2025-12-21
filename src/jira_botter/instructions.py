@@ -1,4 +1,12 @@
 from prompting.prompt import Prompt
+from chatbot.interfaces.chatbot import Chatbot
+
+from typing import override
+
+
+
+
+
 
 
 # system_prompt = Prompt("""Using answers contained in the context, give a comprehensive answer to the question that is similar to those examples.
@@ -12,10 +20,6 @@ from prompting.prompt import Prompt
 # Now here is the question you need to answer:
 
 # Question: {question}""")
-
-
-
-
 
 
 
@@ -44,3 +48,17 @@ request_supportanswer_prompt.set_formatter(
         [f"{"\n\n" if i > 0 else ""}Antwort {str(i+1)}:\n" + doc for i, doc in enumerate(x)]
       )
 )
+
+
+
+class JirabotInstructor(Chatbot.Instructor):
+    
+    @override
+    def create_instructions(self, text, context):
+      return {
+         "prompt": request_supportanswer_prompt.format(
+            request=text,
+            samples=context
+         )
+      } | self.kwargs
+

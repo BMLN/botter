@@ -47,7 +47,7 @@ services:
       - http
 
   jira_bot:
-    image: ghcr.io/bmln/jira_bot
+    image: ghcr.io/bmln/botter
     build:
       context: .
       dockerfile_inline: |

@@ -32,4 +32,4 @@ jobs:
 
       - name: "Publish jira_bot"
         run: |
-          docker push ghcr.io/bmln/jira_bot
+          docker push ghcr.io/bmln/botter

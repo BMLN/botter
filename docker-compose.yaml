@@ -51,7 +51,7 @@ services:
     build:
       context: .
       dockerfile_inline: |
-        FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim as environment
+        FROM ghcr.io/astral-sh/uv:bookworm-slim as build
       
         COPY src/jira_botter /opt/jira_bot
         COPY pyproject.toml /opt/jira_bot/pyproject.toml
@@ -61,8 +61,11 @@ services:
 
 
 
-        FROM environment as runtime
+        FROM build as runtime
         
+        RUN apt update
+        RUN apt upgrade
+        RUN apt install --yes git
         RUN uv sync
         RUN cat <<'EOF' > init.sh
         #!/bin/sh

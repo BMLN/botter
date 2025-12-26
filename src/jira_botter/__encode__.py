@@ -85,11 +85,11 @@ if __name__ == "__main__":
         if not path.isdir("./.processing"):
             mkdir("./.processing")
 
-        if not path.isdir(proc_dir := path.join("./.processing", path.basename(args.input).split(".")[0])):
+        if not path.isdir(proc_dir:= path.join("./.processing", path.basename(args.input).split(".")[0])):
             mkdir(proc_dir)
             
         with TemporaryDirectory(dir=proc_dir, delete=False) as td:
-            copy(args.input, inp := path.join(td, path.basename(args.input)))
+            copy(args.input, inp:= path.join(td, path.basename(args.input)))
 
             BatchProcessor.process(
                 inp, 

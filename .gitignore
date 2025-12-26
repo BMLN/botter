@@ -1,6 +1,8 @@
-.venv
-.env
-.ollama
-*.lock
 *__pycache__
+*.lock
+.venv
+*.env
+*.json
+*.csv
+.ollama
 *.local.*

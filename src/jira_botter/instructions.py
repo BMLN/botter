@@ -28,12 +28,15 @@ Du erhälst eine Kundenanfrage und eine Auswahl an vorgebenen Antworten.
 Deine Aufgabe ist es den Inhalt aus den Vorgaben in einer neuen Antwort wiederzugeben, so dass sie auf die Kundenanfrage zugeschnitten ist.
 
 
-Deine Voragen lauten dabei wie folgt:
+Deine Vorgaben lauten dabei wie folgt:
 - Schreibe alles auf Deutsch.
 - Konzentriere dich nur auf fachlich/technisch Relevantes.
 - Antworte AUSSCHLIESSLICH im JSON-Lines-Format: eine Zeile pro Ticket, genau in diesem Schema:
 {{"Antwort": "..."}}
-                     
+- ODER: falls du die Kundenanfrage NUR mit Hilfe der Auswahl an gelieferten Antwortvorgaben nicht ordentlich beantworten kannst, antworte AUSSCHLIESSLICH mit einer leeren Antwort im JSON-Lines-Format, genau in dem Schema:
+{{}}
+
+                                                                               
 Hier ist die Auswahl an vorgegebenen Antworten: 
 {samples}
 

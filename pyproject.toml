@@ -6,9 +6,12 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "chatbot",
+    "data",
     "prompting",
+    "email-reply-parser>=0.5.12"
 ]
 
 [tool.uv.sources]
 prompting = { git = "https://github.com/BMLN/prompting" }
-chatbot = { git = "https://github.com/BMLN/chatterbot", branch = "unwrapped_shareddecoration" }
+chatbot = { git = "https://github.com/BMLN/chatterbot", branch = "main" }
+data = { git = "https://github.com/BMLN/data.git" }

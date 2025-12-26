@@ -1,43 +1,30 @@
+from sys import exit
+from os import environ
+
+from time import sleep
+from signal import signal, SIGINT
+
+
+
+
+from chatbot.interfaces.chatbot import Chatbot
+from chatbot.instances.knowledgebases import WeaviateKB
+from chatbot.instances.vectorizers import HFVectorizer
+from chatbot.instances.matchers import WeaviateKeyMatcher
 from chatbot.instances.generators import DeepinfraGenerator
-from instructions import system_prompt, user_prompt
+
+
+from .instructions import JirabotInstructor
+
+from .servicedesk import Jira, JiraServicedesk
+from .controller import Controller
 
 
 
 
 
-
-question = "Guten Tag, GUI kann sich nicht anmelden. Wann kann das Problem beheben?\nIch muss heute alle praktischen Aufgaben einreichen. Ich habe alle Aufgaben gemacht außer\ndie Fallstudie ""HCM""  .\nKönnen Sie mir helfen?\nDanke!!!"
-
-context = [
-    r"Hallo Zusammen, leider kann ich mich nicht im System anmelden, weil die Anmeldedaten offenbar nicht mehr funktionieren. (s. Screenshot) Können Sie mir bitte eine neue Anmeldenachricht für *Modul Rechnungswesen und Controlling: Mikrozertifikatskurs ""Rechnungswesen und Controlling in SAP S/4HANA""* zusenden?\n\n\n\nVielen Dank vorab und viele Grüße",
-    r"Sehr geehrtes Support-Team,\n\nleider kann ich mich nicht in das SAP-System einloggen. Ich habe es mit den angegebenen Zugangsdaten versucht, jedoch ohne Erfolg.\nKönnten Sie mir bitte weiterhelfen?\n\nVielen Dank im Voraus für Ihre Unterstützung."
-]
-
-extr_context = [
-
-    """20/Okt/25 7:14 AM;5e5e24b1459a810c9af29a67;Hallo Jens,
-ich habe deinen Zugang entsperrt und das Passwort zurückgesetzt. Es lautet nun wieder:
-tlestart
-Gehe sicher, dass du bei der Anmeldung den Benutzer {{LEARN-126}} sowie den richtigen Mandanten auswählst.
-Beste Grüße
-Tim - WLIB-Support""",
-
-
-    """22/Sep/25 8:29 PM;712020:dd7c0c98-1978-4958-99a8-3d0173a81a22;Hallo,
-
-ich habe das Passwort Ihres Accounts zurückgesetzt.
-Es lautet wieder: tlestart
-
-Nach dem Einloggen können Sie wieder Ihr eigenes Passwort festlegen. 
-
-Nach mehreren falschen Anmeldeversuchen wird das Konto gesperrt, leider werden die verbleibenden Versuche nicht im Login angezeigt. Ich persönlich empfehle die Verwendung eines Passwortmanagers, falls Sie dies nicht bereits tun, da dadurch häufig Tippfehler vermieden werden.
-
-Mit freundlichen Grüßen
-
-Giorgos.
-"""
-
-]
+from logging import getLogger, basicConfig, INFO as LOG_INFO
+logger = getLogger()
 
 
 
@@ -47,26 +34,98 @@ Giorgos.
 
 
 
+if __name__ == "__main__":
+    basicConfig(level=LOG_INFO)
 
 
 
 
-def joiner(docs):
-    return str.join(
-        "",
-        [f"{"\n\n" if i > 0 else ""}Example {str(i)}:::\n" + doc for i, doc in enumerate(docs)]
+
+    #configuration
+    configuration = {
+        "jira_url": environ.get("JIRA_URL", None),
+        "jira_auth_email": environ.get("JIRA_AUTH_EMAIL", None),
+        "jira_auth_token": environ.get("JIRA_AUTH_TOKEN", None),
+        
+        "jira_servicedesk": environ.get("JIRA_SERVICEDESK", None),
+
+
+        "chatbot_kb_host": environ.get("CHATBOT_KB_HOST", None),
+        "chatbot_kb_port": environ.get("CHATBOT_KB_PORT", None),
+        "chatbot_kb_collection": environ.get("CHATBOT_KB_COLLECTION", None),
+        
+        "chatbot_encoder_model": environ.get("CHATBOT_ENCODER_MODEL", None),
+
+        "chatbot_generator_model": environ.get("CHATBOT_GENERATOR_MODEL", None),
+        "chatbot_generator_apikey": environ.get("CHATBOT_GENERATOR_APIKEY", None),
+
+
+        "update_freq": environ.get("UPDATE_FREQ", None)
+    }
+
+    if not all(list(configuration.values())[:-1]):
+        logger.warning(f"didnt provide all variables: Missing { [ str.upper(key) for key, value in list(configuration.items())[:-1] if not value ]}")
+        exit(1)
+    
+
+
+
+
+
+    #setup
+    #jira
+    jira = Jira(
+        configuration["jira_url"], 
+        {
+            "email": configuration["jira_auth_email"], 
+            "api_token": configuration["jira_auth_token"]
+        }
+    )
+    servicedesk = JiraServicedesk(
+        jira, 
+        configuration["jira_servicedesk"]
+    )
+    
+    #chatbot
+    knowledgebase = WeaviateKB(
+        configuration["chatbot_kb_host"], 
+        configuration["chatbot_kb_port"], 
+        configuration["chatbot_kb_collection"]
+    )
+    vectorizer = HFVectorizer(configuration["chatbot_encoder_model"])
+    matcher = WeaviateKeyMatcher("text")
+    instructor = JirabotInstructor()
+    generator = DeepinfraGenerator(
+        configuration["chatbot_generator_model"],
+        configuration["chatbot_generator_apikey"], 
+    )
+
+    chatbot = Chatbot(
+        knowledgebase,
+        vectorizer,
+        matcher,
+        instructor,
+        generator
+    )
+
+    #controls
+    controller = Controller(
+        servicedesk, 
+        chatbot,
+        **({"update_freq": configuration["update_freq"]} if configuration["update_freq"] else {})
     )
 
 
 
-answer = DeepinfraGenerator("meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo").generate(
-    prompt=user_prompt.format(
-        context=joiner(extr_context),
-        question=question, 
-    ), 
-    system_prompt=system_prompt.format()
-)
-
-print(answer)
 
 
+    #and.. run with it
+    controller.start()
+
+    signal(
+        SIGINT,
+        lambda sig, frame: controller.stop()  
+    )
+
+    while True:
+        sleep(13370000)

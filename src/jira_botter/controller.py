@@ -6,11 +6,11 @@ from chatbot.interfaces.chatbot import Chatbot
 from time import sleep
 from queue import Queue
 from threading import Thread, Event
-import atexit
 
 
 import datetime
 
+from sys import meta_path
 from logging import getLogger
 
 logger = getLogger()
@@ -35,10 +35,12 @@ class Controller():
 
 
     def __del__(self):
-        self.stop()
-
-        logger.info(f"jira_bot was shutdown - {str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M"))}")
-
+        try:
+            self.stop()
+            logger.info(f"jira_bot was shutdown - {str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M"))}")
+        
+        except:
+            pass
 
 
 

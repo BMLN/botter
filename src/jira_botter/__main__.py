@@ -124,7 +124,7 @@ if __name__ == "__main__":
 
     signal(
         SIGINT,
-        lambda sig, frame: controller.stop()  
+        lambda sig, frame: controller.stop() or exit(0)
     )
 
     while True:

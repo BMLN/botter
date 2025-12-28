@@ -53,7 +53,7 @@ services:
       dockerfile_inline: |
         FROM ghcr.io/astral-sh/uv:bookworm-slim as build
       
-        COPY src/jira_botter /opt/jira_bot
+        COPY src/jira_botter /opt/jira_bot/jira_bot
         COPY pyproject.toml /opt/jira_bot/pyproject.toml
         RUN mkdir -p /opt/jira_bot/resources
         WORKDIR /opt/jira_bot
@@ -75,13 +75,17 @@ services:
 
 
         if [ "$$SKIP_INIT" = "false" ]; then   
-          echo "Started data initialization..."         
-          uv run python -m jira_bot.__load__ $$(find $$DATA_DIR -maxdepth 1 -type f -print0 | xargs -0)
+          FILES=$$(find $$DATA_DIR -maxdepth 1 -type f -print0 | xargs -0)
           
+          if [ -n "$$FILES" ]; then
+            echo "Started data initialization..."         
+            uv run python -m jira_bot.__load__ "$$FILES"
+          fi
+
           if [ "$$?" != 0 ]; then
             return 1
           fi
-
+          
           echo "Finished data initialization!"
         fi
         
@@ -109,6 +113,6 @@ services:
     depends_on:
       knowledgebase:
         condition: service_started
-      ollama_init:
-        condition: service_completed_successfully
+      # ollama_init:
+      #   condition: service_completed_successfully
           

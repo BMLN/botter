@@ -56,6 +56,10 @@ request_supportanswer_prompt.set_formatter(
 
 class JirabotInstructor(Chatbot.Instructor):
     
+    def __init__(self, **kwargs):
+        super().__init__()
+        self.kwargs = kwargs
+
     @override
     def create_instructions(self, text, context):
       return {

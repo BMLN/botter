@@ -95,6 +95,7 @@ if __name__ == "__main__":
     vectorizer = HFVectorizer(configuration["chatbot_encoder_model"])
     matcher = WeaviateKeyMatcher("text")
     instructor = JirabotInstructor()
+    instructor.create_instructions = lambda text, context: JirabotInstructor.create_instructions(instructor, text, context)[0]
     generator = DeepinfraGenerator(
         configuration["chatbot_generator_model"],
         configuration["chatbot_generator_apikey"], 

@@ -72,7 +72,7 @@ if __name__ == "__main__":
             
             data = pd.DataFrame(
                 {
-                    "embeddings": encoder.vectorize(text.tolist()),
+                    "embedding": encoder.vectorize(text.tolist()),
                     "data": data
                 }
             )

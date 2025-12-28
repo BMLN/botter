@@ -1,4 +1,8 @@
 import sys
+from os import path, mkdir
+from tempfile import TemporaryDirectory
+from shutil import copy, rmtree
+
 from data.load import estimate_chunks
 from data.iter import BatchProcessor, JsonlDataframeProcessor
 from ast import literal_eval
@@ -47,11 +51,11 @@ def processor(data, kb):
     data = data[data.columns.intersection(["id", "data", "embedding"])]
     data["id"] = data["id"].apply(preproc) if "id" in data else None
     data["data"] = data["data"].apply(preproc)
-    data["embedding"] = data["embedding"].apply(preproc).apply(lambda x: x[0])
-                
+    data["embedding"] = data["embedding"].apply(preproc)
+
                 
     kb.create(
-        id=data["id"],
+        id=data["id"] if data["id"].any() else None,    #bandaid #TODO: other impl
         embedding=data["embedding"],
         data=data["data"]
     )
@@ -96,28 +100,42 @@ if __name__ == "__main__":
     #read/write
     succesful_reads = []
 
+
+
     for x in args.files:
 
-        try:
+        if not path.isdir("./.processing"):
+            mkdir("./.processing")
+
+        if not path.isdir(proc_dir:= path.join("./.processing", path.basename(x).split(".")[0])):
+            mkdir(proc_dir)
+
+
+        if True:
             logger.info(f"initializing from {x}...")
 
-            BatchProcessor.process(
-                x,
-                lambda file:
-                    JsonlDataframeProcessor.process(
-                        file, 
-                        processor,
-                        False,
-                        kb=conn
-                    ),
-                batch_size= args.batch_size if args.batch_size else estimate_chunks(args.input, args.designated_bytes, load=args.designated_load)
-            )
+            with TemporaryDirectory(dir=proc_dir, delete=False) as td:
+                copy(x, inp:= path.join(td, path.basename(x)))
+
+                BatchProcessor.process(
+                    inp,
+                    lambda file:
+                        JsonlDataframeProcessor.process(
+                            file, 
+                            processor,
+                            False,
+                            kb=conn
+                        ),
+                    batch_size= args.batch_size if args.batch_size else estimate_chunks(x, args.designated_bytes, load=args.designated_load)
+                )
+            
+            rmtree(td)
             succesful_reads.append(True)
 
 
-        except Exception as e:
-            logger.error(f"could't read {x}: {str(e)}")
-            succesful_reads.append(False)
+        # except Exception as e:
+        #     logger.error(f"could't read {x}: {str(e)}")
+        #     succesful_reads.append(False)
 
 
 

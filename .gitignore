@@ -5,4 +5,5 @@
 *.json
 *.csv
 .ollama
+.processing
 *.local.*

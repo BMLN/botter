@@ -71,6 +71,7 @@ if __name__ == "__main__":
     args.add_argument("--collection", action="store", type=str, required=True)
     args.add_argument("files", action="store", nargs="+", type=str)
 
+    args.add_argument("--batch_size", action="store", type=int, default=None)
     args.add_argument("--designated_load", action="store", type=float, default=0.25)
     args.add_argument("--designated_bytes", action="store", type=int, default=500000000)
     args.add_argument("--error_threshold", action="store", type=float, default=0.8)
@@ -109,7 +110,7 @@ if __name__ == "__main__":
                         False,
                         kb=conn
                     ),
-                batch_size=estimate_chunks(x, args.designated_bytes, load=args.designated_load)
+                batch_size= args.batch_size if args.batch_size else estimate_chunks(args.input, args.designated_bytes, load=args.designated_load)
             )
             succesful_reads.append(True)
 

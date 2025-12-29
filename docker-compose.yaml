@@ -80,13 +80,13 @@ services:
           if [ -n "$$FILES" ]; then
             echo "Started data initialization..."         
             uv run python -m jira_bot.__load__ "$$FILES"
-          fi
+            
+            if [ "$$?" != 0 ]; then
+              return 1
+            fi
 
-          if [ "$$?" != 0 ]; then
-            return 1
+            echo "Finished data initialization!"
           fi
-          
-          echo "Finished data initialization!"
         fi
         
         echo "Started bot initialization..."

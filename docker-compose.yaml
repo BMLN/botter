@@ -79,7 +79,7 @@ services:
           
           if [ -n "$$FILES" ]; then
             echo "Started data initialization..."         
-            uv run python -m jira_bot.__load__ "$$FILES"
+            uv run python -m jira_bot.__load__ "$$FILES" --host $$CHATBOT_KB_HOST --port $$CHATBOT_KB_PORT --collection $$CHATBOT_KB_COLLECTION
             
             if [ "$$?" != 0 ]; then
               return 1

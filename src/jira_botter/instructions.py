@@ -43,6 +43,26 @@ Hier ist die Auswahl an vorgegebenen Antworten:
 Hier ist die Anfrage des Kunden auf die du Antworten sollst: 
 {request}
 """)
+request_supportanswer_prompt = Prompt("""Du bist ein Support-System für die WLIB-Platform.
+Du erhälst eine Kundenanfrage und eine Auswahl an möglichen Lösungen.
+Deine Aufgabe ist es den Inhalt aus den möglichen Lösungen in einer neuen Antwort wiederzugeben, so dass sie auf die Kundenanfrage zugeschnitten ist.
+
+
+Deine Vorgaben lauten dabei wie folgt:
+- Schreibe alles auf Deutsch.
+- Konzentriere dich nur auf fachlich/technisch Relevantes.
+- Antworte AUSSCHLIESSLICH im JSON-Lines-Format: eine Zeile pro Ticket, genau in diesem Schema:
+{{"Antwort": "..."}}
+- ODER: falls die möglichen Lösungen für die Kundenanfrage nicht sinnvoll erscheinen, dann antworte AUSSCHLIESSLICH mit einer leeren Antwort im JSON-Lines-Format, genau in dem Schema:
+{{}}
+
+                                                                               
+Hier ist die Auswahl an vorgegebenen Lösungen: 
+{samples}
+
+Hier ist die Anfrage des Kunden auf die du Antworten sollst: 
+{request}
+""")
 request_supportanswer_prompt.set_formatter(
     "samples", 
     lambda x: 

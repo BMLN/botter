@@ -59,6 +59,7 @@ if __name__ == "__main__":
         "chatbot_generator_model": environ.get("CHATBOT_GENERATOR_MODEL", None),
         "chatbot_generator_apikey": environ.get("CHATBOT_GENERATOR_APIKEY", None),
 
+        "chatbot_matcher_key": environ.get("CHATBOT_MATCHER_KEY", None),
 
         "update_freq": environ.get("UPDATE_FREQ", None)
     }
@@ -93,7 +94,7 @@ if __name__ == "__main__":
         configuration["chatbot_kb_collection"]
     )
     vectorizer = HFVectorizer(configuration["chatbot_encoder_model"])
-    matcher = WeaviateKeyMatcher("text")
+    matcher = WeaviateKeyMatcher(configuration["chatbot_matcher_key"])
     instructor = JirabotInstructor()
     instructor.create_instructions = lambda text, context: JirabotInstructor.create_instructions(instructor, text, context)[0]
     generator = DeepinfraGenerator(

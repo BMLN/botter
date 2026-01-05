@@ -22,6 +22,56 @@ from argparse import ArgumentParser
 
 
 
+def encode(input, output, encoder_model, text_column, data_columns, batch_size=None, designated_load=0.25, designated_bytes=50000000):
+    
+    encoder = HFVectorizer(encoder_model)
+    
+    def process_df(df):
+        if not text_column in df:
+            raise ValueError(f"text_column ({text_column}) is invalid for inputdata {input} ({df.columns.tolist()})")
+                
+        if not all((x in df for x in data_columns)):
+            raise ValueError(f"data_columns ({[x for x in data_columns if not x in df]}) are invalid for inputdata {input} ({df.columns.tolist()})")
+
+
+        text = df[text_column]
+        data = pd.Series(df[data_columns if data_columns else df.columns].to_dict(orient="records") or [ {} ] * len(df))
+        del df
+            
+        data = pd.DataFrame(
+            {
+                "embedding": encoder.vectorize(text.tolist()),
+                "data": data
+            }
+        )
+        data.to_json(output, mode="a", lines=True, orient="records")
+
+        del text
+        del data
+
+
+    if not path.isdir("./.processing"):
+        mkdir("./.processing")
+
+    if not path.isdir(proc_dir:= path.join("./.processing", path.basename(input).split(".")[0])):
+        mkdir(proc_dir)
+
+
+    with TemporaryDirectory(dir=proc_dir, delete=False) as td:
+        copy(input, inp:= path.join(td, path.basename(input)))
+
+        BatchProcessor.process(
+            inp, 
+            lambda file: 
+                CsvDataframeProcessor.process(
+                    file, 
+                    process_df,
+                    False
+                ),
+            batch_size= batch_size if batch_size else estimate_chunks(input, designated_bytes, load=designated_load)
+        )
+        
+    rmtree(td)
 
 
 
@@ -40,7 +90,7 @@ if __name__ == "__main__":
     args.add_argument("--data_columns", action="store", nargs="+", type=str, default=[])
     args.add_argument("--batch_size", action="store", type=int, default=None)
     args.add_argument("--designated_load", action="store", type=float, default=0.25)
-    args.add_argument("--designated_bytes", action="store", type=int, default=500000000)
+    args.add_argument("--designated_bytes", action="store", type=int, default=50000000)
 
     args = args.parse_args()
 
@@ -57,54 +107,16 @@ if __name__ == "__main__":
 
 
     try:
-        encoder = HFVectorizer(args.encoder_model)
-        def process_df(df):
-            if not args.text_column in df:
-                raise ValueError(f"text_column ({args.text_column}) is invalid for inputdata {args.input} ({df.columns.tolist()})")
-                
-            if not all((x in df for x in args.data_columns)):
-                raise ValueError(f"data_columns ({[x for x in args.data_columns if not x in df]}) are invalid for inputdata {args.input} ({df.columns.tolist()})")
-
-
-            text = df[args.text_column]
-            data = pd.Series(df[args.data_columns if args.data_columns else df.columns].to_dict(orient="records") or [ {} ] * len(df))
-            del df
-            
-            data = pd.DataFrame(
-                {
-                    "embedding": encoder.vectorize(text.tolist()),
-                    "data": data
-                }
-            )
-            data.to_json(args.output, mode="a", lines=True, orient="records")
-
-            del text
-            del data
-
-
-
-        if not path.isdir("./.processing"):
-            mkdir("./.processing")
-
-        if not path.isdir(proc_dir:= path.join("./.processing", path.basename(args.input).split(".")[0])):
-            mkdir(proc_dir)
-            
-        with TemporaryDirectory(dir=proc_dir, delete=False) as td:
-            copy(args.input, inp:= path.join(td, path.basename(args.input)))
-
-            BatchProcessor.process(
-                inp, 
-                lambda file: 
-                    CsvDataframeProcessor.process(
-                        file, 
-                        process_df,
-                        False
-                    ),
-                batch_size= args.batch_size if args.batch_size else estimate_chunks(args.input, args.designated_bytes, load=args.designated_load)
-            )
-        
-        rmtree(td)
-
+        encode(
+            args.input, 
+            args.output, 
+            args.encoder_model,
+            args.text_column,
+            args.data_columns,
+            args.batch_size,
+            args.designated_load,
+            args.designated_bytes
+        )
 
 
     except Exception as e:
